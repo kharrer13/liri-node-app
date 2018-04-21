@@ -10,13 +10,9 @@ for (let i = 3; i < argArr.length; i++) {
 // access keys in keys.js.
 var keysFile = require("./keys.js");
 
-// access Twitter API.
-var twitter = require("twitter");
-
-// access Spotify API.
+// access the Twitter, Spotify, and OMDB APIs.
+var Twitter = require("twitter");
 var spotify = require("spotify");
-
-// access OMDB API.
 var request = require("request");
 
 // NPM module used to read the random.txt file.
@@ -24,15 +20,39 @@ var fs = require("fs");
 
 //Object of possible operations entered through command line
 const operations = {
-  "my-tweets"() {},
-  "spotify-this-song"() {},
+  "my-tweets"() {
+    const client = new Twitter(keysFile.twitter);
+
+    const twitterParams = { q: "LiriTestAcct13", count: 20 };
+
+    client.get("search/tweets", twitterParams, function(
+      error,
+      tweets,
+      response
+    ) {
+      if (!error) {
+        for (let i = 0; i < tweets.statuses.length; i++) {
+          const tweetText = tweets.statuses[i].text;
+          const createdDate = tweets.statuses[i].created_at;
+          console.log(tweetText, "twitted on:", createdDate);
+        }
+      } else {
+        console.log(error);
+      }
+    });
+  },
+  "spotify-this-song"() {
+    
+  },
   "movie-this"() {
-    var movieTitle = 'Mr. Nobody';
-    if (searchTitle != '') {
+    var movieTitle = "Mr. Nobody";
+    if (searchTitle != "") {
       movieTitle = searchTitle;
     }
     request(
-      "http://www.omdbapi.com/?t="+movieTitle+"&y=&plot=short&apikey=trilogy",
+      "http://www.omdbapi.com/?t=" +
+        movieTitle +
+        "&y=&plot=short&apikey=trilogy",
       function(error, response, body) {
         if (!error && response.statusCode === 200) {
           const movieInfo = JSON.parse(body);
@@ -53,6 +73,5 @@ const operations = {
   },
   "do-what-it-says"() {}
 };
-
 
 operations[operation]();
