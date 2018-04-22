@@ -8,15 +8,15 @@ for (let i = 3; i < argArr.length; i++) {
 }
 
 // access keys in keys.js.
-var keysFile = require("./keys.js");
+const keysFile = require("./keys.js");
 
 // access the Twitter, Spotify, and OMDB APIs.
-var Twitter = require("twitter");
-var spotify = require("spotify");
-var request = require("request");
+const Twitter = require("twitter");
+const Spotify = require("node-spotify-api");
+const request = require("request");
 
 // NPM module used to read the random.txt file.
-var fs = require("fs");
+const fs = require("fs");
 
 //Object of possible operations entered through command line
 const operations = {
@@ -42,7 +42,24 @@ const operations = {
     });
   },
   "spotify-this-song"() {
-    
+    let songTitle = 'I want it that way'
+    if (searchTitle != ""){
+      songTitle = searchTitle;
+    }
+    const spotify = new Spotify(keysFile.spotify)
+    spotify.search({type: 'track', query: songTitle, limit: 1}, function(error, data){
+      if(error){
+        console.log(error);
+      } else {
+        console.log('Artist(s): ' + data.tracks.items[0].album.artists[0].name);
+        console.log('Title: ' + data.tracks.items[0].name);
+        console.log('Preview: ' + data.tracks.items[0].preview_url);
+        console.log('Album: ' + data.tracks.items[0].album.name);
+
+        // console.log(data.tracks.items.album.artists);
+        // console.log(data.tracks.items.album.name);
+      }
+    });
   },
   "movie-this"() {
     var movieTitle = "Mr. Nobody";
@@ -71,7 +88,14 @@ const operations = {
       }
     );
   },
-  "do-what-it-says"() {}
+  "do-what-it-says"() {
+    fs.readFile('random.txt', 'utf8', function(error, data) {
+      if (!error) {
+        const args = data.split(',');
+        operations[args[0]](args[1]);   
+      }
+    })
+  }
 };
 
 operations[operation]();
